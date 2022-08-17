@@ -8,6 +8,10 @@
 
 #include "connectors.h"
 
+#define KILOBYTE 1024
+#define MEGABYTE 1048576
+#define GIGABYTE 1073741824
+
 // Returns 0 for false and 1 for true
 int isEqual(char *a, int s1, int e1, char *b, int s2, int e2);
 void runSockets(int sockfd, int *keepSockAlive);
@@ -30,7 +34,7 @@ const char *jsonHeader =
 "Access-Control-Allow-Origin: *\r\n"
 "Connection: keep-alive\r\n"
 "Keep-Alive: timeout=5\r\n"
-"Content-Type: json/application; charset=utf-8\r\n\r\n"
+"Content-Type: image/base64; charset=utf-8\r\n\r\n"
 "";
 
 
@@ -235,15 +239,25 @@ int handleConnection(int sockfd, int clientfd) {
 
             if (r == -1) exit(1);
 
-            int n = 100;
-            char message[n];
+            int n = 27*KILOBYTE;
+            char sendbuff[n];
 
-            // Request json data from pyServer
-            r = pyRequest(message, n, 'a');
+            FILE *image;
+            image = fopen("mhm.PNG", "rb");
+
+            // fseek(image, 0L, SEEK_END);
+            // int sz = ftell(image);
+            // rewind(image);
+
+            r = fread(sendbuff, n, 1, image);
+
+            char message[n];
+            // Request base64 encoding data from pyServer
+            r = pyRequest(message, n, sendbuff, n);
 
             printf("Received %d bytes from pyRequest\n", r);
 
-            // Sending json Data
+            // Sending base64 image to client
             r = send(clientfd, message, r, 0);
 
             if (r == -1) exit(1);

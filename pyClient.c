@@ -7,7 +7,7 @@
 #include <string.h>
 #include "connectors.h"
 
-int pyRequest(char *data, int n, char flag) {
+int pyRequest(char *data, int n, char sendBuffer[], int sendSize) {
     const char *host = "127.0.0.1";
     const char *port = "5559";
 
@@ -46,10 +46,10 @@ int pyRequest(char *data, int n, char flag) {
     }
     puts("Connected to pyServer");
 
-    int buff_size = 1024;
+    int buff_size = n;
     char buffer[buff_size];
 
-    r = send(sockfd, &flag, 1, 0);
+    r = send(sockfd, sendBuffer, sendSize, 0);
 
     if (r == -1) exit(1);
 
@@ -58,11 +58,9 @@ int pyRequest(char *data, int n, char flag) {
     r = recv(sockfd, buffer, buff_size, 0);
 
     if (r > 0) {
-
         for (int i = 0; i < r && i < n; i++) {
             data[i] = buffer[i];
         }
-
     }
     puts("Success!");
 
